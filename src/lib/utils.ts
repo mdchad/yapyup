@@ -1,9 +1,27 @@
-import { Linking } from 'react-native';
+import 'react-native-url-polyfill/auto';
+
+import { createClient } from '@supabase/supabase-js';
+import { MMKV } from 'react-native-mmkv';
 import type { StoreApi, UseBoundStore } from 'zustand';
 
-export function openLinkInBrowser(url: string) {
-  Linking.canOpenURL(url).then((canOpen) => canOpen && Linking.openURL(url));
-}
+// Initialize MMKV
+const storage = new MMKV();
+
+// Create custom storage adapter for Supabase using MMKV
+const MMKVStorageAdapter = {
+  getItem: (key: string) => {
+    const value = storage.getString(key);
+    return Promise.resolve(value ?? null);
+  },
+  setItem: (key: string, value: string) => {
+    storage.set(key, value);
+    return Promise.resolve(null);
+  },
+  removeItem: (key: string) => {
+    storage.delete(key);
+    return Promise.resolve(null);
+  },
+};
 
 type WithSelectors<S> = S extends { getState: () => infer T }
   ? S & { use: { [K in keyof T]: () => T[K] } }
@@ -20,3 +38,15 @@ export const createSelectors = <S extends UseBoundStore<StoreApi<object>>>(
 
   return store;
 };
+
+const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL!;
+const supabaseAnonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY!;
+
+export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+  auth: {
+    storage: MMKVStorageAdapter,
+    autoRefreshToken: true,
+    persistSession: true,
+    detectSessionInUrl: false,
+  },
+});
