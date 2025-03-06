@@ -1,27 +1,9 @@
-import 'react-native-url-polyfill/auto';
-
-import { createClient } from '@supabase/supabase-js';
+import { createClient, type SupportedStorage } from '@supabase/supabase-js';
 import { MMKV } from 'react-native-mmkv';
 import type { StoreApi, UseBoundStore } from 'zustand';
 
 // Initialize MMKV
-const storage = new MMKV();
-
-// Create custom storage adapter for Supabase using MMKV
-const MMKVStorageAdapter = {
-  getItem: (key: string) => {
-    const value = storage.getString(key);
-    return Promise.resolve(value ?? null);
-  },
-  setItem: (key: string, value: string) => {
-    storage.set(key, value);
-    return Promise.resolve(null);
-  },
-  removeItem: (key: string) => {
-    storage.delete(key);
-    return Promise.resolve(null);
-  },
-};
+const storage = new MMKV({ id: 'supabase-storage' });
 
 type WithSelectors<S> = S extends { getState: () => infer T }
   ? S & { use: { [K in keyof T]: () => T[K] } }
@@ -39,12 +21,19 @@ export const createSelectors = <S extends UseBoundStore<StoreApi<object>>>(
   return store;
 };
 
+// Create custom storage adapter for Supabase using MMKV
+const mmkvSupabaseSupportedStorage = {
+  setItem: (key, data) => storage.set(key, data),
+  getItem: (key) => storage.getString(key) ?? null,
+  removeItem: (key) => storage.delete(key),
+} satisfies SupportedStorage;
+
 const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL!;
 const supabaseAnonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY!;
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   auth: {
-    storage: MMKVStorageAdapter,
+    storage: mmkvSupabaseSupportedStorage,
     autoRefreshToken: true,
     persistSession: true,
     detectSessionInUrl: false,
