@@ -4,10 +4,15 @@ import { create } from 'zustand';
 import { createSelectors } from '../utils';
 import { supabase } from '../utils';
 
-interface AuthState {
+// State type definition
+type AuthState = {
   session: Session | null;
   email: string;
   status: 'idle' | 'signOut' | 'signIn' | 'awaitingOTP';
+};
+
+// Actions type definition
+type AuthActions = {
   signIn: (email: string) => Promise<{ error: AuthError | null }>;
   verifyOTP: (
     email: string,
@@ -19,73 +24,90 @@ interface AuthState {
   signInApple: (credential: string) => Promise<void>;
   signOut: () => Promise<void>;
   hydrate: () => Promise<void>;
-}
+};
 
-const authMethods = {
-  signIn: async (email: string, set: (state: Partial<AuthState>) => void) => {
+// Initial state
+const initialState: AuthState = {
+  status: 'idle',
+  session: null,
+  email: '',
+};
+
+const _useAuth = create<AuthState & AuthActions>()((set, get) => ({
+  ...initialState,
+
+  signIn: async (email) => {
     try {
       const { error } = await supabase.auth.signInWithOtp({ email });
       if (error) return { error };
-      set({ status: 'awaitingOTP', email });
+
+      set(() => ({
+        status: 'awaitingOTP',
+        email,
+      }));
+
       return { error: null };
     } catch (error) {
       return { error: error as AuthError };
     }
   },
 
-  verifyOTP: async (
-    token: string,
-    set: (state: Partial<AuthState>) => void
-  ) => {
-    const email = _useAuth.getState().email;
-
+  verifyOTP: async (email, token) => {
     try {
       const { data, error } = await supabase.auth.verifyOtp({
-        email,
+        email: get().email,
         token,
         type: 'email',
       });
+
       if (error) return { error, session: null };
-      set({ status: 'signIn', session: data.session });
+
+      set(() => ({
+        status: 'signIn',
+        session: data.session,
+      }));
+
       return { error: null, session: data.session };
     } catch (error) {
       return { error: error as AuthError, session: null };
     }
   },
 
-  signInApple: async (
-    credential: string,
-    set: (state: Partial<AuthState>) => void
-  ) => {
+  signInApple: async (credential) => {
     const { error, data } = await supabase.auth.signInWithIdToken({
       provider: 'apple',
       token: credential,
     });
+
     if (data.session) {
-      set({ status: 'signIn', session: data.session });
+      set(() => ({
+        status: 'signIn',
+        session: data.session,
+      }));
     }
+
     if (error) throw error;
   },
-};
 
-const _useAuth = create<AuthState>((set, get) => ({
-  status: 'idle',
-  session: null,
-  email: '',
-  signIn: (email) => authMethods.signIn(email, set),
-  verifyOTP: (email, token) => authMethods.verifyOTP(token, set),
-  signInApple: (credential) => authMethods.signInApple(credential, set),
   signOut: async () => {
     await supabase.auth.signOut();
-    set({ status: 'signOut', session: null });
+    set(() => ({
+      ...initialState,
+      status: 'signOut',
+    }));
   },
+
   hydrate: async () => {
     try {
       const {
         data: { session },
       } = await supabase.auth.getSession();
+
       if (session) {
-        set({ status: 'signIn', session });
+        set(() => ({
+          status: 'signIn',
+          session,
+        }));
       } else {
         get().signOut();
       }

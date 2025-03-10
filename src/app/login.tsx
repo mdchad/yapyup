@@ -1,42 +1,58 @@
 import * as AppleAuthentication from 'expo-apple-authentication';
 import { Redirect } from 'expo-router';
-import React, { useState } from 'react';
+import React from 'react';
 
-import type { LoginFormProps } from '@/components/login-form';
+import type {
+  FormType as LoginFormType,
+  LoginFormProps,
+} from '@/components/login-form';
 import { LoginForm } from '@/components/login-form';
-import { type OTPFormProps } from '@/components/otp-form';
+import type {
+  FormType as OTPFormType,
+  OTPFormProps,
+} from '@/components/otp-form';
 import { FocusAwareStatusBar } from '@/components/ui';
 import { useAuth } from '@/lib';
 
 export default function Login() {
-  const signIn = useAuth.use.signIn();
-  const signInApple = useAuth.use.signInApple();
-  const verify = useAuth.use.verifyOTP();
-  const status = useAuth.use.status();
-  const email = useAuth.use.email();
+  // Select only the needed state and actions using individual selectors
+  const status = useAuth((state) => state.status);
+  const email = useAuth((state) => state.email);
+  const signIn = useAuth((state) => state.signIn);
+  const verify = useAuth((state) => state.verifyOTP);
+  const signInApple = useAuth((state) => state.signInApple);
 
-  const [error, setError] = useState<boolean>(false);
+  // Use boolean for error state to match LoginFormProps
+  const [hasError, setHasError] = React.useState(false);
 
-  const onSubmit: LoginFormProps['onSubmit'] = async (data) => {
-    console.log(data);
-    const { error } = await signIn(data.email);
-    if (error) {
-      setError(true);
-    }
-  };
+  // Handle login form submission
+  const onSubmit: LoginFormProps['onSubmit'] = React.useCallback(
+    async (data: LoginFormType) => {
+      try {
+        const { error: signInError } = await signIn(data.email);
+        setHasError(Boolean(signInError));
+      } catch (e) {
+        setHasError(true);
+      }
+    },
+    [signIn]
+  );
 
-  const onSubmitOTP: OTPFormProps['onSubmit'] = async (data) => {
-    console.log(data);
-    const { error } = await verify(email, data.otp);
+  // Handle OTP verification
+  const onSubmitOTP: OTPFormProps['onSubmit'] = React.useCallback(
+    async (data: OTPFormType) => {
+      try {
+        const { error: verifyError } = await verify(email, data.otp);
+        setHasError(Boolean(verifyError));
+      } catch (e) {
+        setHasError(true);
+      }
+    },
+    [email, verify]
+  );
 
-    console.log(status);
-
-    if (error) {
-      setError(true);
-    }
-  };
-
-  const onSignInApple = async () => {
+  // Handle Apple sign in
+  const onSignInApple = React.useCallback(async () => {
     try {
       const credential = await AppleAuthentication.signInAsync({
         requestedScopes: [
@@ -44,23 +60,26 @@ export default function Login() {
           AppleAuthentication.AppleAuthenticationScope.EMAIL,
         ],
       });
-      // Sign in via Supabase Auth.
+
       if (credential.identityToken) {
         await signInApple(credential.identityToken);
       } else {
-        throw new Error('No identityToken.');
+        throw new Error('No identity token provided');
       }
     } catch (e: any) {
       if (e.code === 'ERR_REQUEST_CANCELED') {
-        // handle that the user canceled the sign-in flow
-      } else {
-        // handle other errors
+        // User canceled the sign-in flow
+        return;
       }
+      setHasError(true);
     }
-  };
+  }, [signInApple]);
+
+  // Immediate redirect when status changes to 'signIn'
   if (status === 'signIn') {
     return <Redirect href="/" />;
   }
+
   return (
     <>
       <FocusAwareStatusBar />
@@ -68,7 +87,7 @@ export default function Login() {
         onSubmit={onSubmit}
         onSignInApple={onSignInApple}
         onSubmitOTP={onSubmitOTP}
-        error={error}
+        error={hasError}
       />
     </>
   );

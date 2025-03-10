@@ -65,11 +65,11 @@ export const LoginForm = ({
                 testID="form-title"
                 className="pb-6 text-center text-4xl font-bold"
               >
-                BrainBard
+                YapYup
               </Text>
 
               <Text className="mb-6 max-w-xs text-center text-2xl text-red-500">
-                The #1 Learning app to learn a new language
+                Your go to for AI
               </Text>
             </View>
 
