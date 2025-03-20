@@ -42,6 +42,12 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     config: {
       usesNonExemptEncryption: false, // Avoid the export compliance warning on the app store
     },
+    infoPlist: {
+      NSSpeechRecognitionUsageDescription:
+        'We need access to speech recognition to convert your voice into text.',
+      NSMicrophoneUsageDescription:
+        'We need access to your microphone to record your voice for speech recognition.',
+    },
   },
   experiments: {
     typedRoutes: true,
@@ -74,6 +80,16 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     ],
     'expo-localization',
     'expo-router',
+    [
+      'expo-speech-recognition',
+      {
+        microphonePermission: 'Allow YapYup to use the microphone',
+        speechRecognitionPermission: 'Allow YapYup to use speech recognition',
+        androidSpeechServicePackages: [
+          'com.google.android.googlequicksearchbox',
+        ],
+      },
+    ],
     ['app-icon-badge', appIconBadgeConfig],
     ['react-native-edge-to-edge'],
   ],
