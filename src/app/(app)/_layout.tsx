@@ -1,5 +1,6 @@
 /* eslint-disable react/no-unstable-nested-components */
 import { Link, Redirect, SplashScreen, Tabs } from 'expo-router';
+import { History } from 'lucide-react-native';
 import React, { useCallback, useEffect } from 'react';
 
 import { Pressable, Text } from '@/components/ui';
@@ -35,7 +36,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          title: 'Feed',
+          title: 'Chat',
           tabBarIcon: ({ color }) => <FeedIcon color={color} />,
           headerRight: () => <CreateNewPostLink />,
           tabBarButtonTestID: 'feed-tab',
@@ -49,6 +50,13 @@ export default function TabLayout() {
           headerShown: false,
           tabBarIcon: ({ color }) => <StyleIcon color={color} />,
           tabBarButtonTestID: 'style-tab',
+        }}
+      />
+      <Tabs.Screen
+        name="history"
+        options={{
+          title: 'History',
+          tabBarIcon: ({ color }) => <History size={24} color={color} />,
         }}
       />
       <Tabs.Screen
