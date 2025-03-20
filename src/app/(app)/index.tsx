@@ -1,3 +1,7 @@
+import {
+  ExpoSpeechRecognitionModule,
+  useSpeechRecognitionEvent,
+} from 'expo-speech-recognition';
 import { StatusBar } from 'expo-status-bar';
 import { MessageSquare } from 'lucide-react-native';
 import React, { useEffect, useRef, useState } from 'react';
@@ -39,19 +43,59 @@ export default function Chat() {
     addMessage,
     updateConversationTitle,
     updateConversationTopics,
-    // setCurrentConversation,
     setIsRecording,
     setIsProcessing,
   } = useConversationStore();
 
   const [transcription, setTranscription] = useState('');
+  const [hasPermission, setHasPermission] = useState(false);
   const flatListRef = useRef<FlatList>(null);
 
   const currentConversation = conversations.find(
     (conv) => conv.id === currentConversationId
   );
 
+  // eslint-disable-next-line
   const messages = currentConversation?.messages || [];
+
+  // Handle speech recognition results
+  useSpeechRecognitionEvent('result', (event) => {
+    if (event.results[0]?.transcript) {
+      setTranscription(event.results[0].transcript);
+    }
+  });
+
+  // Handle speech recognition errors
+  useSpeechRecognitionEvent('error', (event) => {
+    console.error('Speech recognition error:', event.error, event.message);
+    setIsRecording(false);
+    Alert.alert('Error', `Speech recognition error: ${event.message}`);
+  });
+
+  useEffect(() => {
+    // Request microphone permission on component mount
+    const getPermission = async () => {
+      try {
+        const result =
+          await ExpoSpeechRecognitionModule.requestPermissionsAsync();
+        setHasPermission(result.granted);
+        if (!result.granted) {
+          Alert.alert(
+            'Permission Required',
+            'Microphone permission is required for speech recognition.'
+          );
+        }
+      } catch (error) {
+        console.error('Error requesting microphone permission:', error);
+        Alert.alert(
+          'Permission Error',
+          'Failed to request microphone permission. Speech recognition may not work.'
+        );
+      }
+    };
+
+    getPermission();
+  }, []);
 
   useEffect(() => {
     // If there's no current conversation, start a new one
@@ -69,17 +113,23 @@ export default function Chat() {
 
   const handleStartRecording = async () => {
     try {
-      // In a real app, you would use Speech Recognition API
-      // For this mock, we'll simulate recording
+      if (!hasPermission) {
+        Alert.alert(
+          'Permission Required',
+          'Please grant microphone permission to use speech recognition.'
+        );
+        return;
+      }
+
       setIsRecording(true);
 
-      // Simulate recording for 3 seconds
-      setTimeout(() => {
-        setIsRecording(false);
-        setTranscription(
-          'This is a simulated transcription. In a real app, this would be your actual speech converted to text.'
-        );
-      }, 3000);
+      // Start listening with continuous recognition
+      await ExpoSpeechRecognitionModule.start({
+        lang: 'en-US',
+        interimResults: true,
+        continuous: true,
+        requiresOnDeviceRecognition: Platform.OS === 'ios',
+      });
     } catch (error) {
       console.error('Failed to start recording', error);
       Alert.alert('Error', 'Failed to start recording. Please try again.');
@@ -87,8 +137,14 @@ export default function Chat() {
     }
   };
 
-  const handleStopRecording = () => {
-    setIsRecording(false);
+  const handleStopRecording = async () => {
+    try {
+      await ExpoSpeechRecognitionModule.stop();
+      setIsRecording(false);
+    } catch (error) {
+      console.error('Failed to stop recording', error);
+      setIsRecording(false);
+    }
   };
 
   const handleToggleRecording = () => {
@@ -145,7 +201,16 @@ export default function Chat() {
 
       processTranscription();
     }
-  }, [transcription, isRecording, currentConversationId]);
+  }, [
+    transcription,
+    isRecording,
+    currentConversationId,
+    setIsProcessing,
+    addMessage,
+    messages,
+    updateConversationTopics,
+    updateConversationTitle,
+  ]);
 
   const handlePromptSelect = (prompt: string) => {
     setTranscription(prompt);

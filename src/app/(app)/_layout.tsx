@@ -1,9 +1,8 @@
 /* eslint-disable react/no-unstable-nested-components */
-import { Link, Redirect, SplashScreen, Tabs } from 'expo-router';
+import { Redirect, SplashScreen, Tabs } from 'expo-router';
 import { History } from 'lucide-react-native';
 import React, { useCallback, useEffect } from 'react';
 
-import { Pressable, Text } from '@/components/ui';
 import {
   Feed as FeedIcon,
   Settings as SettingsIcon,
@@ -38,8 +37,7 @@ export default function TabLayout() {
         options={{
           title: 'Chat',
           tabBarIcon: ({ color }) => <FeedIcon color={color} />,
-          headerRight: () => <CreateNewPostLink />,
-          tabBarButtonTestID: 'feed-tab',
+          tabBarButtonTestID: 'chat-tab',
         }}
       />
 
@@ -72,12 +70,12 @@ export default function TabLayout() {
   );
 }
 
-const CreateNewPostLink = () => {
-  return (
-    <Link href="/feed/add-post" asChild>
-      <Pressable>
-        <Text className="px-3 text-primary-300">Create</Text>
-      </Pressable>
-    </Link>
-  );
-};
+// const CreateNewPostLink = () => {
+//   return (
+//     <Link href="/feed/add-post" asChild>
+//       <Pressable>
+//         <Text className="px-3 text-primary-300">Create</Text>
+//       </Pressable>
+//     </Link>
+//   );
+// };
