@@ -37,8 +37,8 @@ require('dotenv').config({
 const BUNDLE_ID = 'com.yapyup'; // ios bundle id
 const PACKAGE = 'com.yapyup'; // android package name
 const NAME = 'yapyup'; // app name
-const EXPO_ACCOUNT_OWNER = 'expo-owner'; // expo account owner
-const EAS_PROJECT_ID = 'c3e1075b-6fe7-4686-aa49-35b46a229044'; // eas project id
+const EXPO_ACCOUNT_OWNER = 'pixelmind'; // expo account owner
+const EAS_PROJECT_ID = 'cde73b1c-7320-4686-a8f5-94b00778dd6c'; // eas project id
 const SCHEME = 'yapyup'; // app scheme
 
 /**
