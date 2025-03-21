@@ -49,20 +49,53 @@ export default function Chat() {
 
   const [transcription, setTranscription] = useState('');
   const [hasPermission, setHasPermission] = useState(false);
+  const [currentTranscription, setCurrentTranscription] = useState('');
+  const [liveMessages, setLiveMessages] = useState<Message[]>([]);
   const flatListRef = useRef<FlatList>(null);
+  const processingRef = useRef(false);
 
   const currentConversation = conversations.find(
     (conv) => conv.id === currentConversationId
   );
 
-  // eslint-disable-next-line
   const messages = currentConversation?.messages || [];
 
   // Handle speech recognition results
   useSpeechRecognitionEvent('result', (event) => {
-    if (event.results[0]?.transcript) {
-      setTranscription(event.results[0].transcript);
+    console.log('Speech result:', event); // Debug log
+    const lastResult = event.results[event.results.length - 1];
+    if (event?.isFinal && lastResult?.transcript) {
+      console.log('Got transcript:', lastResult.transcript); // Debug log
+      setCurrentTranscription(lastResult.transcript);
+      // Update live messages with the current transcription
+      setLiveMessages([
+        ...liveMessages,
+        {
+          id: `live-transcription-${Math.random()}`,
+          text: lastResult.transcript,
+          sender: 'user',
+          timestamp: Date.now(),
+        },
+      ]);
     }
+  });
+
+  // Handle pause detection
+  useSpeechRecognitionEvent('end', () => {
+    console.log(
+      'Speech end detected, current transcription:',
+      currentTranscription
+    ); // Debug log
+    if (currentTranscription && !processingRef.current) {
+      setTranscription(currentTranscription);
+      setCurrentTranscription('');
+      setLiveMessages([]); // Clear live messages when speech ends
+    }
+  });
+
+  // Handle speech start
+  useSpeechRecognitionEvent('start', () => {
+    console.log('Speech recognition started'); // Debug log
   });
 
   // Handle speech recognition errors
@@ -122,6 +155,9 @@ export default function Chat() {
       }
 
       setIsRecording(true);
+      setCurrentTranscription('');
+      setLiveMessages([]); // Clear any previous live messages
+      processingRef.current = false;
 
       // Start listening with continuous recognition
       await ExpoSpeechRecognitionModule.start({
@@ -141,6 +177,13 @@ export default function Chat() {
     try {
       await ExpoSpeechRecognitionModule.stop();
       setIsRecording(false);
+      processingRef.current = false;
+      setLiveMessages([]); // Clear live messages
+      // Process any remaining transcription
+      if (currentTranscription) {
+        setTranscription(currentTranscription);
+        setCurrentTranscription('');
+      }
     } catch (error) {
       console.error('Failed to stop recording', error);
       setIsRecording(false);
@@ -157,16 +200,17 @@ export default function Chat() {
 
   useEffect(() => {
     // Process transcription when available
-    if (transcription && !isRecording && currentConversationId) {
+    if (transcription && currentConversationId) {
       const processTranscription = async () => {
+        processingRef.current = true;
         setIsProcessing(true);
 
         // Add user message
-        addMessage(currentConversationId, {
-          text: transcription,
-          sender: 'user',
-          timestamp: Date.now(),
-        });
+        // addMessage(currentConversationId, {
+        //   text: transcription,
+        //   sender: 'user',
+        //   timestamp: Date.now(),
+        // });
 
         // If this is the first message, update the conversation title
         if (messages.length === 0) {
@@ -195,15 +239,14 @@ export default function Chat() {
         const topics = extractTopics(allMessages);
         updateConversationTopics(currentConversationId, topics);
 
-        setTranscription('');
         setIsProcessing(false);
+        processingRef.current = false;
       };
 
       processTranscription();
     }
   }, [
     transcription,
-    isRecording,
     currentConversationId,
     setIsProcessing,
     addMessage,
@@ -229,7 +272,7 @@ export default function Chat() {
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
       >
-        {messages.length === 0 ? (
+        {messages.length === 0 && liveMessages.length === 0 ? (
           <View style={styles.emptyContainer}>
             <EmptyState
               icon={<MessageSquare size={48} color={Colors.primary} />}
@@ -257,7 +300,7 @@ export default function Chat() {
         ) : (
           <FlatList
             ref={flatListRef}
-            data={messages}
+            data={[...liveMessages]}
             renderItem={renderMessage}
             keyExtractor={(item) => item.id}
             contentContainerStyle={styles.messagesContainer}
@@ -339,5 +382,12 @@ const styles = StyleSheet.create({
     marginLeft: 8,
     color: Colors.text,
     fontSize: 14,
+  },
+  liveTranscriptionContainer: {
+    position: 'absolute',
+    bottom: 80,
+    left: 0,
+    right: 0,
+    padding: 16,
   },
 });
