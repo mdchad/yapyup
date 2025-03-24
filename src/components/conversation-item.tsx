@@ -1,8 +1,8 @@
 import { MessageSquare, Trash2 } from 'lucide-react-native';
 import React from 'react';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Text, TouchableOpacity, View } from 'react-native';
 
-import Colors from '@/lib/constants/colors';
+import colors from '@/components/ui/colors';
 import { type Conversation } from '@/types';
 
 interface ConversationItemProps {
@@ -24,98 +24,45 @@ export default function ConversationItem({
   });
 
   return (
-    <TouchableOpacity style={styles.container} onPress={onPress}>
-      <View style={styles.iconContainer}>
-        <MessageSquare size={24} color={Colors.primary} />
+    <TouchableOpacity
+      className="mb-3 flex-row rounded-xl bg-white p-4 shadow-sm"
+      onPress={onPress}
+    >
+      <View className="mr-3 size-10 items-center justify-center rounded-full bg-gray-100">
+        <MessageSquare size={24} color={colors.primary[400]} />
       </View>
-      <View style={styles.content}>
-        <Text style={styles.title} numberOfLines={1}>
+      <View className="flex-1">
+        <Text
+          className="text-text mb-1 text-base font-semibold"
+          numberOfLines={1}
+        >
           {conversation.title}
         </Text>
-        <Text style={styles.details}>
+        <Text className="mb-2 text-sm text-zinc-400">
           {formattedDate} • {messageCount} message
           {messageCount !== 1 ? 's' : ''}
         </Text>
         {conversation.topics.length > 0 && (
-          <View style={styles.topicsContainer}>
+          <View className="flex-row flex-wrap">
             {conversation.topics.slice(0, 3).map((topic, index) => (
-              <View key={index} style={styles.topicBadge}>
-                <Text style={styles.topicText}>{topic}</Text>
+              <View
+                key={index}
+                className="mb-1 mr-1.5 rounded-xl bg-gray-100 px-2 py-1"
+              >
+                <Text className="text-xs text-charcoal-800">{topic}</Text>
               </View>
             ))}
             {conversation.topics.length > 3 && (
-              <Text style={styles.moreTopics}>
+              <Text className="self-center text-xs text-zinc-400">
                 +{conversation.topics.length - 3}
               </Text>
             )}
           </View>
         )}
       </View>
-      <TouchableOpacity style={styles.deleteButton} onPress={onDelete}>
-        <Trash2 size={20} color={Colors.darkGray} />
+      <TouchableOpacity className="p-2" onPress={onDelete}>
+        <Trash2 size={20} color={colors.neutral[800]} />
       </TouchableOpacity>
     </TouchableOpacity>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flexDirection: 'row',
-    padding: 16,
-    backgroundColor: Colors.white,
-    borderRadius: 12,
-    marginBottom: 12,
-    shadowColor: Colors.black,
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 2,
-  },
-  iconContainer: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: Colors.lightGray,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: 12,
-  },
-  content: {
-    flex: 1,
-  },
-  title: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: Colors.text,
-    marginBottom: 4,
-  },
-  details: {
-    fontSize: 14,
-    color: Colors.darkGray,
-    marginBottom: 8,
-  },
-  topicsContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-  },
-  topicBadge: {
-    backgroundColor: Colors.lightGray,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 12,
-    marginRight: 6,
-    marginBottom: 4,
-  },
-  topicText: {
-    fontSize: 12,
-    color: Colors.text,
-  },
-  moreTopics: {
-    fontSize: 12,
-    color: Colors.darkGray,
-    alignSelf: 'center',
-  },
-  deleteButton: {
-    padding: 8,
-  },
-});

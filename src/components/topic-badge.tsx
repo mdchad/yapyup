@@ -1,7 +1,5 @@
 import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
-
-import Colors from '@/lib/constants/colors';
+import { Text, View } from 'react-native';
 
 interface TopicBadgeProps {
   topic: string;
@@ -15,24 +13,24 @@ export default function TopicBadge({ topic, count, index }: TopicBadgeProps) {
 
   return (
     <View
-      style={[
-        styles.container,
-        isHighlighted ? styles.highlightedContainer : null,
-      ]}
+      className={`mb-2 mr-2 flex-row items-center rounded-[20px] py-1.5 pl-3 pr-1 ${
+        isHighlighted ? 'bg-primary-100' : 'bg-gray-100'
+      }`}
     >
       <Text
-        style={[styles.topic, isHighlighted ? styles.highlightedTopic : null]}
+        className={`mr-2 text-sm ${
+          isHighlighted ? 'font-medium text-primary-400' : 'text-charcoal-800'
+        }`}
       >
         {topic}
       </Text>
       <View
-        style={[
-          styles.countContainer,
-          isHighlighted ? styles.highlightedCountContainer : null,
-        ]}
+        className={`rounded-xl px-2 py-0.5 ${
+          isHighlighted ? 'bg-primary-400' : 'bg-white'
+        }`}
       >
         <Text
-          style={[styles.count, isHighlighted ? styles.highlightedCount : null]}
+          className={`text-xs font-medium ${isHighlighted ? 'text-white' : 'text-charcoal-800'}`}
         >
           {count}
         </Text>
@@ -40,46 +38,3 @@ export default function TopicBadge({ topic, count, index }: TopicBadgeProps) {
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: Colors.lightGray,
-    borderRadius: 20,
-    paddingLeft: 12,
-    paddingRight: 4,
-    paddingVertical: 6,
-    marginRight: 8,
-    marginBottom: 8,
-  },
-  highlightedContainer: {
-    backgroundColor: Colors.primary + '20', // 20% opacity
-  },
-  topic: {
-    fontSize: 14,
-    color: Colors.text,
-    marginRight: 8,
-  },
-  highlightedTopic: {
-    color: Colors.primary,
-    fontWeight: '500',
-  },
-  countContainer: {
-    backgroundColor: Colors.white,
-    borderRadius: 12,
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-  },
-  highlightedCountContainer: {
-    backgroundColor: Colors.primary,
-  },
-  count: {
-    fontSize: 12,
-    color: Colors.text,
-    fontWeight: '500',
-  },
-  highlightedCount: {
-    color: Colors.white,
-  },
-});

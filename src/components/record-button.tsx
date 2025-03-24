@@ -1,8 +1,8 @@
 import { Mic, Square } from 'lucide-react-native';
 import React from 'react';
-import { Animated, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { Animated, TouchableOpacity, View } from 'react-native';
 
-import Colors from '@/lib/constants/colors';
+import colors from '@/components/ui/colors';
 
 interface RecordButtonProps {
   isRecording: boolean;
@@ -37,11 +37,11 @@ export default function RecordButton({
   }, [isRecording, pulseAnim]);
 
   return (
-    <View style={styles.container}>
+    <View className="size-[70px] items-center justify-center">
       {isRecording && (
         <Animated.View
+          className="bg-error absolute size-[60px] rounded-full"
           style={[
-            styles.pulse,
             {
               transform: [{ scale: pulseAnim }],
               opacity: pulseAnim.interpolate({
@@ -53,47 +53,17 @@ export default function RecordButton({
         />
       )}
       <TouchableOpacity
-        style={[styles.button, isRecording ? styles.recordingButton : null]}
+        className={`size-[60px] items-center justify-center rounded-full shadow-lg ${
+          isRecording ? 'bg-red-200' : 'bg-primary-400'
+        }`}
         onPress={onPress}
       >
         {isRecording ? (
-          <Square size={24} color={Colors.white} />
+          <Square size={24} color={colors.white} />
         ) : (
-          <Mic size={24} color={Colors.white} />
+          <Mic size={24} color={colors.white} />
         )}
       </TouchableOpacity>
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    width: 70,
-    height: 70,
-  },
-  button: {
-    backgroundColor: Colors.primary,
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: Colors.black,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
-    elevation: 4,
-  },
-  recordingButton: {
-    backgroundColor: Colors.error,
-  },
-  pulse: {
-    position: 'absolute',
-    backgroundColor: Colors.error,
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-  },
-});

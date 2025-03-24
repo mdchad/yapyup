@@ -12,7 +12,6 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
-  StyleSheet,
   Text,
   View,
 } from 'react-native';
@@ -22,7 +21,7 @@ import EmptyState from '@/components/empty-state';
 import MessageBubble from '@/components/message-bubble';
 import PromptSuggestion from '@/components/prompt-suggestion';
 import RecordButton from '@/components/record-button';
-import Colors from '@/lib/constants/colors';
+import colors from '@/components/ui/colors';
 import { suggestedPrompts } from '@/lib/constants/prompts';
 import {
   extractTopics,
@@ -264,28 +263,30 @@ export default function Chat() {
   );
 
   return (
-    <SafeAreaView style={styles.container} edges={['right', 'left']}>
+    <SafeAreaView className="bg-background flex-1" edges={['right', 'left']}>
       <StatusBar style="dark" />
 
       <KeyboardAvoidingView
-        style={styles.keyboardAvoidingView}
+        className="flex-1"
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
       >
         {messages.length === 0 && liveMessages.length === 0 ? (
-          <View style={styles.emptyContainer}>
+          <View className="flex-1 justify-center">
             <EmptyState
-              icon={<MessageSquare size={48} color={Colors.primary} />}
+              icon={<MessageSquare size={48} color={colors.primary[400]} />}
               title="Start a Conversation"
               message="Tap the microphone button and start speaking, or select one of the suggested prompts below."
             />
 
-            <View style={styles.promptsContainer}>
-              <Text style={styles.promptsTitle}>Suggested Prompts</Text>
+            <View className="absolute inset-x-0 bottom-[100px] px-4">
+              <Text className="mb-3 text-base font-semibold text-charcoal-800">
+                Suggested Prompts
+              </Text>
               <ScrollView
                 horizontal
                 showsHorizontalScrollIndicator={false}
-                contentContainerStyle={styles.promptsScrollContent}
+                className="flex-row flex-wrap pr-4"
               >
                 {suggestedPrompts.map((prompt) => (
                   <PromptSuggestion
@@ -303,19 +304,21 @@ export default function Chat() {
             data={[...liveMessages]}
             renderItem={renderMessage}
             keyExtractor={(item) => item.id}
-            contentContainerStyle={styles.messagesContainer}
+            className="p-4 pb-20"
             showsVerticalScrollIndicator={false}
           />
         )}
 
         {isProcessing && (
-          <View style={styles.processingContainer}>
-            <ActivityIndicator color={Colors.primary} size="small" />
-            <Text style={styles.processingText}>Processing...</Text>
+          <View className="mb-2 flex-row items-center justify-center self-center rounded-full bg-gray-100 p-2">
+            <ActivityIndicator color={colors.primary[400]} size="small" />
+            <Text className="ml-2 text-sm text-charcoal-800">
+              Processing...
+            </Text>
           </View>
         )}
 
-        <View style={styles.inputContainer}>
+        <View className="absolute inset-x-0 bottom-4 items-center justify-center">
           <RecordButton
             isRecording={isRecording}
             onPress={handleToggleRecording}
@@ -325,69 +328,3 @@ export default function Chat() {
     </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: Colors.background,
-  },
-  keyboardAvoidingView: {
-    flex: 1,
-  },
-  emptyContainer: {
-    flex: 1,
-    justifyContent: 'center',
-  },
-  messagesContainer: {
-    padding: 16,
-    paddingBottom: 80,
-  },
-  inputContainer: {
-    position: 'absolute',
-    bottom: 16,
-    left: 0,
-    right: 0,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  promptsContainer: {
-    position: 'absolute',
-    bottom: 100,
-    left: 0,
-    right: 0,
-    padding: 16,
-  },
-  promptsTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: Colors.text,
-    marginBottom: 12,
-  },
-  promptsScrollContent: {
-    paddingRight: 16,
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-  },
-  processingContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 8,
-    backgroundColor: Colors.lightGray,
-    borderRadius: 20,
-    alignSelf: 'center',
-    marginBottom: 8,
-  },
-  processingText: {
-    marginLeft: 8,
-    color: Colors.text,
-    fontSize: 14,
-  },
-  liveTranscriptionContainer: {
-    position: 'absolute',
-    bottom: 80,
-    left: 0,
-    right: 0,
-    padding: 16,
-  },
-});
