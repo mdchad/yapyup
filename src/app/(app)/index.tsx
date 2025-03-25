@@ -1,28 +1,26 @@
+//@ts-nocheck
+import { useChat } from '@ai-sdk/react';
+import { fetch as expoFetch } from 'expo/fetch';
 import {
   ExpoSpeechRecognitionModule,
   useSpeechRecognitionEvent,
 } from 'expo-speech-recognition';
 import { StatusBar } from 'expo-status-bar';
-import { MessageSquare } from 'lucide-react-native';
 import React, { useEffect, useRef, useState } from 'react';
 import {
-  ActivityIndicator,
   Alert,
-  FlatList,
+  type FlatList,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
   Text,
+  TextInput,
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import EmptyState from '@/components/empty-state';
 import MessageBubble from '@/components/message-bubble';
-import PromptSuggestion from '@/components/prompt-suggestion';
 import RecordButton from '@/components/record-button';
-import colors from '@/components/ui/colors';
-import { suggestedPrompts } from '@/lib/constants/prompts';
 import {
   extractTopics,
   generateAiResponse,
@@ -53,11 +51,17 @@ export default function Chat() {
   const flatListRef = useRef<FlatList>(null);
   const processingRef = useRef(false);
 
+  const { messages, error, handleInputChange, input, handleSubmit } = useChat({
+    fetch: expoFetch as unknown as typeof globalThis.fetch,
+    api: 'http://localhost:8787/api/chat',
+    onError: (error) => console.error(error, 'ERROR'),
+  });
+
   const currentConversation = conversations.find(
     (conv) => conv.id === currentConversationId
   );
 
-  const messages = currentConversation?.messages || [];
+  // const messages = currentConversation?.messages || [];
 
   // Handle speech recognition results
   useSpeechRecognitionEvent('result', (event) => {
@@ -222,6 +226,7 @@ export default function Chat() {
         // Get AI response
         const aiResponse = await generateAiResponse(transcription);
 
+        // handleSubmit(transcription)
         // Add AI message
         addMessage(currentConversationId, {
           text: aiResponse,
@@ -271,52 +276,94 @@ export default function Chat() {
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
       >
-        {messages.length === 0 && liveMessages.length === 0 ? (
-          <View className="flex-1 justify-center">
-            <EmptyState
-              icon={<MessageSquare size={48} color={colors.primary[400]} />}
-              title="Start a Conversation"
-              message="Tap the microphone button and start speaking, or select one of the suggested prompts below."
-            />
+        {/*{messages.length === 0 && liveMessages.length === 0 ? (*/}
+        {/*  <View className="flex-1 justify-center">*/}
+        {/*    <EmptyState*/}
+        {/*      icon={<MessageSquare size={48} color={colors.primary[400]} />}*/}
+        {/*      title="Start a Conversation"*/}
+        {/*      message="Tap the microphone button and start speaking, or select one of the suggested prompts below."*/}
+        {/*    />*/}
 
-            <View className="absolute inset-x-0 bottom-[100px] px-4">
-              <Text className="mb-3 text-base font-semibold text-charcoal-800">
-                Suggested Prompts
-              </Text>
-              <ScrollView
-                horizontal
-                showsHorizontalScrollIndicator={false}
-                className="flex-row flex-wrap pr-4"
-              >
-                {suggestedPrompts.map((prompt) => (
-                  <PromptSuggestion
-                    key={prompt.id}
-                    title={prompt.title}
-                    onPress={() => handlePromptSelect(prompt.prompt)}
-                  />
-                ))}
-              </ScrollView>
-            </View>
-          </View>
-        ) : (
-          <FlatList
-            ref={flatListRef}
-            data={[...liveMessages]}
-            renderItem={renderMessage}
-            keyExtractor={(item) => item.id}
-            className="p-4 pb-20"
-            showsVerticalScrollIndicator={false}
+        {/*    <View className="absolute inset-x-0 bottom-[100px] px-4">*/}
+        {/*      <Text className="mb-3 text-base font-semibold text-charcoal-800">*/}
+        {/*        Suggested Prompts*/}
+        {/*      </Text>*/}
+        {/*      <ScrollView*/}
+        {/*        horizontal*/}
+        {/*        showsHorizontalScrollIndicator={false}*/}
+        {/*        className="flex-row flex-wrap pr-4"*/}
+        {/*      >*/}
+        {/*        {suggestedPrompts.map((prompt) => (*/}
+        {/*          <PromptSuggestion*/}
+        {/*            key={prompt.id}*/}
+        {/*            title={prompt.title}*/}
+        {/*            onPress={() => handlePromptSelect(prompt.prompt)}*/}
+        {/*          />*/}
+        {/*        ))}*/}
+        {/*      </ScrollView>*/}
+        {/*    </View>*/}
+        {/*  </View>*/}
+        {/*) : (*/}
+        {/*  <FlatList*/}
+        {/*    ref={flatListRef}*/}
+        {/*    data={[...liveMessages]}*/}
+        {/*    renderItem={renderMessage}*/}
+        {/*    keyExtractor={(item) => item.id}*/}
+        {/*    className="p-4 pb-20"*/}
+        {/*    showsVerticalScrollIndicator={false}*/}
+        {/*  />*/}
+        {/*)}*/}
+
+        {/*{isProcessing && (*/}
+        {/*  <View className="mb-2 flex-row items-center justify-center self-center rounded-full bg-gray-100 p-2">*/}
+        {/*    <ActivityIndicator color={colors.primary[400]} size="small" />*/}
+        {/*    <Text className="ml-2 text-sm text-charcoal-800">*/}
+        {/*      Processing...*/}
+        {/*    </Text>*/}
+        {/*  </View>*/}
+        {/*)}*/}
+
+        <View
+          style={{
+            height: '95%',
+            display: 'flex',
+            flexDirection: 'column',
+            paddingHorizontal: 8,
+          }}
+        >
+          <ScrollView style={{ flex: 1 }}>
+            {messages.map((m) => (
+              <View key={m.id} style={{ marginVertical: 8 }}>
+                <View>
+                  <Text style={{ fontWeight: 700 }}>{m.role}</Text>
+                  <Text>{m.content}</Text>
+                </View>
+              </View>
+            ))}
+          </ScrollView>
+        </View>
+
+        <View style={{ marginTop: 8 }}>
+          <TextInput
+            style={{ backgroundColor: 'white', padding: 8 }}
+            placeholder="Say something..."
+            value={input}
+            onChange={(e) =>
+              handleInputChange({
+                ...e,
+                target: {
+                  ...e.target,
+                  value: e.nativeEvent.text,
+                },
+              } as unknown as React.ChangeEvent<HTMLInputElement>)
+            }
+            onSubmitEditing={(e) => {
+              handleSubmit(e);
+              e.preventDefault();
+            }}
+            autoFocus={true}
           />
-        )}
-
-        {isProcessing && (
-          <View className="mb-2 flex-row items-center justify-center self-center rounded-full bg-gray-100 p-2">
-            <ActivityIndicator color={colors.primary[400]} size="small" />
-            <Text className="ml-2 text-sm text-charcoal-800">
-              Processing...
-            </Text>
-          </View>
-        )}
+        </View>
 
         <View className="absolute inset-x-0 bottom-4 items-center justify-center">
           <RecordButton
