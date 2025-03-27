@@ -13,6 +13,7 @@ import { KeyboardProvider } from 'react-native-keyboard-controller';
 import { APIProvider } from '@/api';
 import { hydrateAuth, loadSelectedTheme } from '@/lib';
 import { useThemeConfig } from '@/lib/use-theme-config';
+import '../../polyfill';
 
 export { ErrorBoundary } from 'expo-router';
 
