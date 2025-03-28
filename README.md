@@ -37,6 +37,13 @@ To run the app on Android
 pnpm android
 ```
 
+## ✍️ Local Development
+
+To run with phyisical device and local cloudflare worker
+```sh
+pnpm dev --local-protocol=http --ip=0.0.0.0
+```
+
 ## ✍️ Documentation
 
 - [Rules and Conventions](https://starter.obytes.com/getting-started/rules-and-conventions/)
