@@ -49,3 +49,5 @@ export const getNextPageParam: GetPreviousPageParamFunction<
   unknown,
   PaginateQuery<unknown>
 > = (page) => getUrlParameters(page.next)?.offset ?? null;
+
+

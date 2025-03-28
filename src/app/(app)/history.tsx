@@ -2,12 +2,12 @@ import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { History } from 'lucide-react-native';
 import React from 'react';
-import { Alert, FlatList, StyleSheet } from 'react-native';
+import { Alert, FlatList } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import ConversationItem from '@/components/conversation-item';
 import EmptyState from '@/components/empty-state';
-import Colors from '@/lib/constants/colors';
+import colors from '@/components/ui/colors';
 import { useConversationStore } from '@/lib/store/conversation-store';
 
 export default function HistoryScreen() {
@@ -39,12 +39,12 @@ export default function HistoryScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container} edges={['right', 'left']}>
+    <SafeAreaView className="flex-1 bg-white" edges={['right', 'left']}>
       <StatusBar style="dark" />
 
       {conversations.length === 0 ? (
         <EmptyState
-          icon={<History size={48} color={Colors.primary} />}
+          icon={<History size={48} color={colors.primary[400]} />}
           title="No Conversations Yet"
           message="Your conversation history will appear here once you start chatting with the AI."
         />
@@ -59,19 +59,9 @@ export default function HistoryScreen() {
             />
           )}
           keyExtractor={(item) => item.id}
-          contentContainerStyle={styles.listContent}
+          contentContainerClassName="p-4"
         />
       )}
     </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: Colors.background,
-  },
-  listContent: {
-    padding: 16,
-  },
-});

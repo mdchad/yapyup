@@ -1,7 +1,5 @@
 import React from 'react';
-import { StyleSheet, Text, TouchableOpacity } from 'react-native';
-
-import Colors from '@/lib/constants/colors';
+import { Text, TouchableOpacity } from 'react-native';
 
 interface PromptSuggestionProps {
   title: string;
@@ -13,24 +11,11 @@ export default function PromptSuggestion({
   onPress,
 }: PromptSuggestionProps) {
   return (
-    <TouchableOpacity style={styles.container} onPress={onPress}>
-      <Text style={styles.text}>{title}</Text>
+    <TouchableOpacity
+      className="mb-2.5 mr-2.5 rounded-[20px] bg-gray-100 px-4 py-3"
+      onPress={onPress}
+    >
+      <Text className="text-sm font-medium text-charcoal-800">{title}</Text>
     </TouchableOpacity>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    backgroundColor: Colors.lightGray,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderRadius: 20,
-    marginRight: 10,
-    marginBottom: 10,
-  },
-  text: {
-    color: Colors.text,
-    fontSize: 14,
-    fontWeight: '500',
-  },
-});

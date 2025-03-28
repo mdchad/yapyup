@@ -1,6 +1,6 @@
 <h1 align="center">
   <img alt="logo" src="./assets/icon.png" width="124px" style="border-radius:10px"/><br/>
-Mobile App </h1>
+Yapyup </h1>
 
 > This Project is based on [Obytes starter](https://starter.obytes.com)
 
@@ -35,6 +35,13 @@ To run the app on Android
 
 ```sh
 pnpm android
+```
+
+## ✍️ Local Development
+
+To run with phyisical device and local cloudflare worker
+```sh
+pnpm dev --local-protocol=http --ip=0.0.0.0
 ```
 
 ## ✍️ Documentation

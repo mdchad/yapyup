@@ -1,7 +1,5 @@
 import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
-
-import Colors from '@/lib/constants/colors';
+import { Text, View } from 'react-native';
 
 interface EmptyStateProps {
   icon: React.ReactNode;
@@ -11,35 +9,14 @@ interface EmptyStateProps {
 
 export default function EmptyState({ icon, title, message }: EmptyStateProps) {
   return (
-    <View style={styles.container}>
-      <View style={styles.iconContainer}>{icon}</View>
-      <Text style={styles.title}>{title}</Text>
-      <Text style={styles.message}>{message}</Text>
+    <View className="flex-1 items-center justify-center p-6">
+      <View className="mb-6">{icon}</View>
+      <Text className="mb-2 text-center text-xl font-semibold text-charcoal-800">
+        {title}
+      </Text>
+      <Text className="text-center text-base leading-[22px] text-zinc-400">
+        {message}
+      </Text>
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 24,
-  },
-  iconContainer: {
-    marginBottom: 24,
-  },
-  title: {
-    fontSize: 20,
-    fontWeight: '600',
-    color: Colors.text,
-    marginBottom: 8,
-    textAlign: 'center',
-  },
-  message: {
-    fontSize: 16,
-    color: Colors.darkGray,
-    textAlign: 'center',
-    lineHeight: 22,
-  },
-});

@@ -1,7 +1,6 @@
 import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { Text, View } from 'react-native';
 
-import Colors from '@/lib/constants/colors';
 import { type Message } from '@/types';
 
 interface MessageBubbleProps {
@@ -13,19 +12,24 @@ export default function MessageBubble({ message }: MessageBubbleProps) {
 
   return (
     <View
-      style={[
-        styles.container,
-        isUser ? styles.userContainer : styles.aiContainer,
-      ]}
+      className={`my-2 max-w-[80%] ${
+        isUser ? 'items-end self-end' : 'items-start self-start'
+      }`}
     >
       <View
-        style={[styles.bubble, isUser ? styles.userBubble : styles.aiBubble]}
+        className={`rounded-[18px] px-4 py-2.5 ${
+          isUser ? 'bg-primary-400' : 'bg-gray-100'
+        }`}
       >
-        <Text style={[styles.text, isUser ? styles.userText : styles.aiText]}>
+        <Text
+          className={`text-base leading-[22px] ${
+            isUser ? 'text-white' : 'text-charcoal-800'
+          }`}
+        >
           {message.text}
         </Text>
       </View>
-      <Text style={styles.timestamp}>
+      <Text className="mt-1 text-xs text-zinc-400">
         {new Date(message.timestamp).toLocaleTimeString([], {
           hour: '2-digit',
           minute: '2-digit',
@@ -34,44 +38,3 @@ export default function MessageBubble({ message }: MessageBubbleProps) {
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    marginVertical: 8,
-    maxWidth: '80%',
-  },
-  userContainer: {
-    alignSelf: 'flex-end',
-    alignItems: 'flex-end',
-  },
-  aiContainer: {
-    alignSelf: 'flex-start',
-    alignItems: 'flex-start',
-  },
-  bubble: {
-    borderRadius: 18,
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-  },
-  userBubble: {
-    backgroundColor: Colors.primary,
-  },
-  aiBubble: {
-    backgroundColor: Colors.lightGray,
-  },
-  text: {
-    fontSize: 16,
-    lineHeight: 22,
-  },
-  userText: {
-    color: Colors.white,
-  },
-  aiText: {
-    color: Colors.text,
-  },
-  timestamp: {
-    fontSize: 12,
-    color: Colors.darkGray,
-    marginTop: 4,
-  },
-});
