@@ -1,7 +1,7 @@
 import { createClient, type SupportedStorage } from '@supabase/supabase-js';
+import Constants from 'expo-constants';
 import { MMKV } from 'react-native-mmkv';
 import type { StoreApi, UseBoundStore } from 'zustand';
-import Constants from 'expo-constants';
 
 // Initialize MMKV
 const storage = new MMKV({ id: 'supabase-storage' });
@@ -46,16 +46,13 @@ export const generateAPIUrl = (relativePath: string) => {
 
   if (process.env.NODE_ENV === 'development') {
     // Extract the IP/hostname part but use the Cloudflare Worker port
-    const hostPart = Constants.expoConfig?.hostUri
-      ?.split(':')[0];
-    let a = `http://${hostPart}:8787${path}`;
-    console.log(a)
-    return a
+    const hostPart = Constants.expoConfig?.hostUri?.split(':')[0];
+    return `http://${hostPart}:8787${path}`;
   }
 
   if (!process.env.EXPO_PUBLIC_API_BASE_URL) {
     throw new Error(
-      'EXPO_PUBLIC_API_BASE_URL environment variable is not defined',
+      'EXPO_PUBLIC_API_BASE_URL environment variable is not defined'
     );
   }
   return process.env.EXPO_PUBLIC_API_BASE_URL.concat(path);
