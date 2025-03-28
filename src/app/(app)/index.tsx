@@ -28,6 +28,7 @@ import {
 } from '@/lib/mock-ai-response';
 import { useConversationStore } from '@/lib/store/conversation-store';
 import { type Message } from '@/types';
+import { generateAPIUrl } from "@/lib";
 
 // eslint-disable-next-line max-lines-per-function
 export default function Chat() {
@@ -53,7 +54,7 @@ export default function Chat() {
 
   const { messages, error, handleInputChange, input, handleSubmit } = useChat({
     fetch: expoFetch as unknown as typeof globalThis.fetch,
-    api: 'http://localhost:8787/api/chat',
+    api: generateAPIUrl('/api/chat'),
     onError: (error) => console.error(error, 'ERROR'),
   });
 
