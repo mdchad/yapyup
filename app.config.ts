@@ -65,6 +65,19 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   },
   plugins: [
     [
+      '@config-plugins/react-native-webrtc',
+      {
+        microphonePermission: 'Allow $(PRODUCT_NAME) to access your microphone',
+      },
+    ],
+    [
+      'expo-av',
+      {
+        microphonePermission:
+          'Allow $(PRODUCT_NAME) to access your microphone.',
+      },
+    ],
+    [
       'expo-splash-screen',
       {
         backgroundColor: '#2E3C4B',
