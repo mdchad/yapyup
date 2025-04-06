@@ -1,13 +1,15 @@
 import { Audio } from 'expo-av';
 import { StatusBar } from 'expo-status-bar';
 import React, { useEffect, useRef, useState } from 'react';
-import { Button, SafeAreaView, StyleSheet, Text, View } from 'react-native';
+import { SafeAreaView, StyleSheet, Text, View } from 'react-native';
 import {
   mediaDevices,
   MediaStream,
   RTCPeerConnection,
   RTCView,
 } from 'react-native-webrtc-web-shim';
+import { Button } from "@/components/ui";
+import { Waveform } from "@/components/ui/icons/waveform";
 
 export default function Chat() {
   const [isSessionActive, setIsSessionActive] = useState(false);
@@ -127,10 +129,11 @@ export default function Chat() {
         <View>
           {!isSessionActive ? (
             <Button
-              title="Start"
               onPress={startSession}
               disabled={isSessionActive}
-            />
+            >
+              <Waveform />
+            </Button>
           ) : (
             <Button
               title="Stop"
