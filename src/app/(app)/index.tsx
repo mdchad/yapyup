@@ -1,20 +1,23 @@
 import { Audio } from 'expo-av';
 import { StatusBar } from 'expo-status-bar';
+import { StopCircleIcon } from 'lucide-react-native';
 import React, { useEffect, useRef, useState } from 'react';
-import { SafeAreaView, StyleSheet, Text, View } from 'react-native';
+import { SafeAreaView, Text, View } from 'react-native';
 import {
   mediaDevices,
   MediaStream,
   RTCPeerConnection,
   RTCView,
 } from 'react-native-webrtc-web-shim';
-import { Button } from "@/components/ui";
-import { Waveform } from "@/components/ui/icons/waveform";
+
+import { Button } from '@/components/ui';
+import { Waveform } from '@/components/ui/icons/waveform';
 
 export default function Chat() {
   const [isSessionActive, setIsSessionActive] = useState(false);
   const [events, setEvents] = useState<any[]>([]);
   const [transcript, setTranscript] = useState('');
+  const [ephemeralKey, setEphemeralKey] = useState<string | null>(null);
   const [dataChannel, setDataChannel] = useState<null | ReturnType<
     RTCPeerConnection['createDataChannel']
   >>(null);
@@ -26,12 +29,11 @@ export default function Chat() {
   const isVoiceOnly = true;
 
   async function startSession() {
-    console.log("eyyyyy")
-    const tokenResponse = await fetch("https://77b0-203-117-133-106.ngrok-free.app/api/session", { method: "POST"});
-    console.log("heiererere")
-    const data = await tokenResponse.json();
-    const EPHEMERAL_KEY = data.client_secret.value;
-    console.log("key", EPHEMERAL_KEY)
+    if (!ephemeralKey) {
+      console.log('No ephemeral key available');
+      return;
+    }
+
     // Enable audio
     await Audio.setAudioModeAsync({ playsInSilentModeIOS: true });
     // Create a peer connection
@@ -70,7 +72,7 @@ export default function Chat() {
       method: 'POST',
       body: offer.sdp,
       headers: {
-        Authorization: `Bearer ${EPHEMERAL_KEY}`,
+        Authorization: `Bearer ${ephemeralKey}`,
         'Content-Type': 'application/sdp',
       },
     });
@@ -98,6 +100,26 @@ export default function Chat() {
     peerConnection.current = null;
   }
 
+  async function fetchEphemeralKey() {
+    try {
+      const tokenResponse = await fetch(
+        'https://2ec4-203-117-133-106.ngrok-free.app/api/session',
+        { method: 'POST' }
+      );
+      const data = await tokenResponse.json();
+      const key = data.client_secret.value;
+      setEphemeralKey(key);
+      return key;
+    } catch (e) {
+      console.log(e);
+      setEphemeralKey(null);
+    }
+  }
+
+  useEffect(() => {
+    fetchEphemeralKey();
+  }, []);
+
   // Attach event listeners to the data channel when a new one is created
   useEffect(() => {
     if (dataChannel) {
@@ -108,7 +130,7 @@ export default function Chat() {
         console.log('dataChannel message', data);
         setEvents((prev) => [data, ...prev]);
         // Get transcript.
-        console.log('data', data)
+        console.log('data', data);
         if (data.type === 'response.audio_transcript.done') {
           setTranscript(data.transcript);
         }
@@ -125,36 +147,33 @@ export default function Chat() {
   return (
     <>
       <StatusBar style="auto" />
-      <SafeAreaView style={styles.container}>
-        <View>
-          {!isSessionActive ? (
-            <Button
-              onPress={startSession}
-              disabled={isSessionActive}
-            >
-              <Waveform />
-            </Button>
-          ) : (
-            <Button
-              title="Stop"
-              onPress={stopSession}
-              disabled={!isSessionActive}
-            />
-          )}
+      <SafeAreaView className="flex-1 bg-white">
+        <View className="flex-1 items-center justify-center p-4">
+          <View className="mb-4 w-auto">
+            {!isSessionActive ? (
+              <Button
+                onPress={startSession}
+                disabled={isSessionActive || !ephemeralKey}
+                variant="outline"
+                className="w-auto"
+              >
+                <Waveform />
+              </Button>
+            ) : (
+              <Button
+                onPress={stopSession}
+                disabled={!isSessionActive}
+                variant="outline"
+                className="w-auto"
+              >
+                <StopCircleIcon color="#000" />
+              </Button>
+            )}
+          </View>
           <RTCView stream={remoteMediaStream.current} />
+          <Text className="mt-4 text-center text-2xl">{transcript}</Text>
         </View>
-        <Text style={styles.text}>{transcript}</Text>
       </SafeAreaView>
     </>
   );
-};
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'stretch',
-    justifyContent: 'center',
-  },
-  text: { textAlign: 'center', fontSize: 88 },
-});
+}

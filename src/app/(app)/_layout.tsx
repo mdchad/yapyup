@@ -36,6 +36,7 @@ export default function TabLayout() {
         name="index"
         options={{
           title: 'Chat',
+          headerShown: false,
           tabBarIcon: ({ color }) => <FeedIcon color={color} />,
           tabBarButtonTestID: 'chat-tab',
         }}
